@@ -1,51 +1,47 @@
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { type Movie } from '../../types/movie';
-import styles from './MovieModal.module.css';
+import { useEffect } from "react";
+import ReactDOM from "react-dom";
+import styles from "./MovieModal.module.css";
+import type { Movie } from "../../types/movie";
 
 interface MovieModalProps {
   movie: Movie;
   onClose: () => void;
 }
 
-const MovieModal: React.FC<MovieModalProps> = ({ movie, onClose }) => {
+export default function MovieModal({ movie, onClose }: MovieModalProps) {
   useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
-    // Заборонити скролінг тіла сторінки
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', handleEscape);
+    const handleBodyScroll = () => {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    const cleanup = handleBodyScroll();
 
     return () => {
-      // Очищення: відновити скролінг та видалити слухач подій
-      document.body.style.overflow = 'unset';
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("keydown", handleKeyDown);
+      cleanup();
     };
   }, [onClose]);
 
-  const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  const modalContent = (
-    <div 
-      className={styles.backdrop} 
-      role="dialog" 
-      aria-modal="true"
-      onClick={handleBackdropClick}
-    >
+  return ReactDOM.createPortal(
+    <div className={styles.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>
       <div className={styles.modal}>
-        <button 
-          className={styles.closeButton} 
-          aria-label="Close modal"
-          onClick={onClose}
-        >
+        <button className={styles.closeButton} aria-label="Close modal" onClick={onClose}>
           &times;
         </button>
         <img
@@ -64,10 +60,7 @@ const MovieModal: React.FC<MovieModalProps> = ({ movie, onClose }) => {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-
-  return createPortal(modalContent, document.body);
-};
-
-export default MovieModal;
+}

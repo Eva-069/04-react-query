@@ -1,35 +1,24 @@
-import { useFormStatus } from 'react-dom';
-import toast from 'react-hot-toast';
-import styles from './SearchBar.module.css';
+import { useRef } from "react";
+import toast from "react-hot-toast";
+import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
-  onSubmit: (query: string) => Promise<void>;
+  onSubmit: (query: string) => void;
 }
 
-const SubmitButton = () => {
-  const { pending } = useFormStatus();
-  
-  return (
-    <button 
-      className={styles.button}
-      type="submit"
-      disabled={pending}
-    >
-      {pending ? 'Searching...' : 'Search'}
-    </button>
-  );
-};
+export default function SearchBar({ onSubmit }: SearchBarProps) {
+  const formRef = useRef<HTMLFormElement>(null);
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSubmit }) => {
-  const handleFormAction = async (formData: FormData) => {
-    const query = formData.get('query') as string;
-    
-    if (!query.trim()) {
-      toast.error('Please enter your search query.');
+ async function formAction(formData: FormData) {
+    const query = (formData.get("query") as string).trim();
+
+    if (!query) {
+      toast.error("Please enter your search query.");
       return;
     }
-    
-    await onSubmit(query.trim());
+
+    onSubmit(query);
+      formRef.current?.reset();
   };
 
   return (
@@ -43,7 +32,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit }) => {
         >
           Powered by TMDB
         </a>
-        <form className={styles.form} action={handleFormAction}>
+        <form className={styles.form} action={formAction}>
           <input
             className={styles.input}
             type="text"
@@ -52,11 +41,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit }) => {
             placeholder="Search movies..."
             autoFocus
           />
-          <SubmitButton />
+          <button className={styles.button} type="submit">
+            Search
+          </button>
         </form>
       </div>
     </header>
   );
-};
-
-export default SearchBar;
+}

@@ -1,7 +1,9 @@
-import styles from './ErrorMessage.module.css';
+import styles from "./ErrorMessage.module.css";
 
-const ErrorMessage: React.FC = () => {
-  return <p className={styles.text}>There was an error, please try again...</p>;
-};
+interface ErrorMessageProps {
+  message: string;
+}
 
-export default ErrorMessage;
+export default function ErrorMessage({ message }: ErrorMessageProps) {
+  return <p className={styles.text}>{message}</p>;
+}
